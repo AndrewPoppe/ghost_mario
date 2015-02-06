@@ -6,6 +6,7 @@
 // @include       http://*.newcompte.fr:*
 // @grant		  GM_setValue
 // @grant 		  GM_getValue
+// @grant 		  GM_deleteValue
 // ==/UserScript==
 
 
@@ -13,10 +14,10 @@
 // This section records data each match //
 //--------------------------------------//
 
-// Function to easily create array of zeros
-function createZeroArray(N) {
+// Function to easily create array of null values
+function createNullArray(N) {
     return (Array.apply(null, {length: N}).map(Number.call, function () {
-        return (0);
+        return (null);
     }))
 }
 
@@ -31,10 +32,10 @@ function storeData(positions, id, name, time) {
 	
 	// compare this game's best to stored currently stored best time
 	// if this game's is better, store this game's instead
-	if(typeof currentBest === 'undefined' || JSON.parse(currentBest).time > time) {
+	if(typeof currentBest === 'undefined' || JSON.parse(currentBest).time >= time) {
 		winnerData = {
-			positions = positions['player'+id],
-			time = time
+            positions : positions['player'+id],
+            time : time
 		};
 		
 		GM_setValue('currentBestData', JSON.stringify(winnerData));
@@ -43,26 +44,26 @@ function storeData(positions, id, name, time) {
 }
 
 // function to start recording
-function recordData() {
+function recordGhostData() {
 	var positions = {};			// this object holds all position data 
 	var fps = 60;				// how frequently we record player position data (e.g., 60 times per second)
 	var saveDuration = 180;		// save data for maximum of 3 minutes
 	
 	// function to save game data
-    saveGameData = function () {
+    saveGhostData = function () {
     	
     	// create player objects within positions objects for any player not already represented
-        currentPlayers = tagpro.players;
+        var currentPlayers = tagpro.players;
         for (player in currentPlayers) {
             if (!positions['player' + player]) {
                 positions['player' + player] = {
-                    x: 		createZeroArray(saveDuration * fps),
-                    y: 		createZeroArray(saveDuration * fps),
-                    name: 	createZeroArray(saveDuration * fps),
-                    dead: 	createZeroArray(saveDuration * fps),
-                    auth: 	createZeroArray(saveDuration * fps),
-                    degree:	createZeroArray(saveDuration * fps),
-                    flair: 	createZeroArray(saveDuration * fps)
+                    x: 		createNullArray(saveDuration * fps),
+                    y: 		createNullArray(saveDuration * fps),
+                    //name: 	new Array(saveDuration * fps),
+                    //dead: 	new Array(saveDuration * fps),
+                    //auth: 	new Array(saveDuration * fps),
+                    //degree:	new Array(saveDuration * fps),
+                    //flair: 	new Array(saveDuration * fps)
                 };
             };
         };
@@ -78,11 +79,11 @@ function recordData() {
     }
     
     // interval for calling saveGameData function at proper frequency
-    recordInterval = setInterval(saveGameData, 1000 / fps);
+    var recordInterval = setInterval(saveGhostData, 1000 / fps);
 
 	// set up listener for mario grabbed event
 	// this will fire the storeData function and stop the saveGameData interval
-    tagpro.socket.on('mario', function (mario) {
+	tagpro.socket.on('mario', function (mario) {
     	storeData(positions, mario.id, mario.name, mario.time);
     	clearInterval(recordInterval);
     });
@@ -90,11 +91,55 @@ function recordData() {
 };
 
 
+
+
+//----------------------------------------------//
+// This section plays recorded data as a shadow //
+//----------------------------------------------//
+
+// function to get stored data and clean it.
+function getStoredData() {
+	var dat = GM_getValue('currentBestData');
+	if(!dat) return
+    dat = JSON.parse(dat);
+    if(!dat.positions) { GM_deleteValue('currentBestData'); return}
+	for(var i=0; i < dat.positions.x.length; i++) {
+		if(dat.positions.x[i] === null) {
+			dat.positions.x.shift();
+			dat.positions.y.shift();
+			i--
+		}
+	}
+	return(dat)
+}
+
+// function to start ghost animation
+function animateGhost(dat) {
+	if(!dat) return
+	var i = 0;
+	interval = setInterval(function(){
+		tagpro.renderer.drawSpawn(dat.positions.x[i],dat.positions.y[i],0,1000/60);
+		tagpro.renderer.drawSpawn(dat.positions.x[i],dat.positions.y[i],0,1000/60);
+		i++;
+		if(i >= dat.positions.x.length) clearInterval(interval);
+	}, 1000/60)
+}
+		
+
+
+//--------------------------------------------//
+// Actually start the recording and animation //
+//--------------------------------------------//
+
 // actually start recording
-tagpro.ready(function() {
-	tagpro.socket.on('time', function(time) {
-		if(time.state === 1) {
-			recordData();
-		};
+$(document).ready(function() {
+    tagpro.ready(function() {
+        var dat = getStoredData();
+        tagpro.socket.on('time', function(time) {
+            if(time.state === 1) {
+                recordGhostData();
+				animateGhost(dat);
+			};
+		});
 	});
 });
