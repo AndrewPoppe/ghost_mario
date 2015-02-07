@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name          Ghost Mario
 // @version       0.1
-// @include       http://*.koalabeast.com:*
-// @include       http://*.jukejuice.com:*
-// @include       http://*.newcompte.fr:*
+// @include       http://*.koalabeast.com*
+// @include       http://*.jukejuice.com*
+// @include       http://*.newcompte.fr*
 // @grant		  GM_setValue
 // @grant 		  GM_getValue
 // @grant 		  GM_deleteValue
@@ -131,23 +131,49 @@ function animateGhost(dat, ghost) {
 // Actually start the recording and animation //
 //--------------------------------------------//
 
+
 // actually start recording
 $(document).ready(function() {
-    tagpro.ready(function() {
-        var dat = getStoredData();
-        var ghost;
-        if(dat) ghost = tagpro.tiles.draw(tagpro.renderer.layers.foreground, 
-                                      "blueball", 
-                                      {x: dat.positions.x[0], y: dat.positions.x[0]}, 
-                                      null, 
-                                      null, 
-                                      0.75, 
-                                      true);
-        tagpro.socket.on('time', function(time) {
-            if(time.state === 1) {
-                recordGhostData();
-                animateGhost(dat, ghost);
-            };
-        });
-    });
+	// if we're in a game:
+	if(document.URL.search(/:[0-9]{4}/) >= 0) {
+	    tagpro.ready(function() {
+        	var dat = getStoredData();
+        	var ghost;
+        	if(dat) ghost = tagpro.tiles.draw(tagpro.renderer.layers.foreground, 
+                                      	"blueball", 
+                                      	{x: dat.positions.x[0], y: dat.positions.x[0]}, 
+                                      	null, 
+                                      	null, 
+                                      	0.75, 
+                                      	true);
+        	tagpro.socket.on('time', function(time) {
+            	if(time.state === 1) {
+                	recordGhostData();
+                	animateGhost(dat, ghost);
+            	};
+        	});
+    	});
+    };
 });
+
+
+//--------------------------------------------//
+// Make a group page button to reset the data //
+//--------------------------------------------//
+
+$(document).ready(function() {
+// if we're not in a game, but rather on the group page, make a button to reset the ghost data
+	if(document.URL.search(/groups\/[a-z]{8}/) >= 0) { 
+		$('#leaveButton').after('<Button id=rGButton>Reset Ghost');
+		$('#rGButton').after('<txt id=rGConf>Deleted');
+		$('#rGConf')[0].style.color='#66FF33';
+		$('#rGConf').hide();
+		$('#rGButton')[0].onclick = function(){
+			GM_deleteValue('currentBestData');
+			$('#rGConf').fadeIn();
+			$('#rGConf').fadeOut(1000);
+		}
+	}
+});
+
+
