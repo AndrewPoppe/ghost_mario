@@ -135,7 +135,8 @@ function animateGhost(dat, ghost) {
 $(document).ready(function() {
     tagpro.ready(function() {
         var dat = getStoredData();
-        var ghost = tagpro.tiles.draw(tagpro.renderer.layers.foreground, 
+        var ghost;
+        if(dat) ghost = tagpro.tiles.draw(tagpro.renderer.layers.foreground, 
                                       "blueball", 
                                       {x: dat.positions.x[0], y: dat.positions.x[0]}, 
                                       null, 
