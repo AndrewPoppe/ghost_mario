@@ -10,6 +10,7 @@
 // ==/UserScript==
 
 
+
 //--------------------------------------//
 // This section records data each match //
 //--------------------------------------//
@@ -35,7 +36,8 @@ function storeData(positions, id, name, time) {
     if(typeof currentBest === 'undefined' || JSON.parse(currentBest).time >= time) {
         winnerData = {
             positions : positions['player'+id],
-            time : time
+            time : time,
+            name : name
         };
         
         GM_setValue('currentBestData', JSON.stringify(winnerData));
@@ -81,10 +83,29 @@ function recordGhostData() {
     // interval for calling saveGameData function at proper frequency
     var recordInterval = setInterval(saveGhostData, 1000 / fps);
     
-    // set up listener for mario grabbed event
+    // set up listener for chat event
+    // if it includes the impossible player language, then that is the end.
     // this will fire the storeData function and stop the saveGameData interval
-    tagpro.socket.on('mario', function (mario) {
-        storeData(positions, mario.id, mario.name, mario.time);
+    tagpro.socket.on('chat', function (chat) {
+        if(chat.from === null && chat.message.search('has reached the IMPOSSIBLE FLAIR') >= 0) {
+            var timePart = chat.message.split(' in ')[1];
+            var minutes = Number(timePart.split("'")[0]);
+            var secondsWhole = timePart.split("'")[1];
+            var seconds = Number(secondsWhole.split('"')[0]);
+            var milliseconds = Number(secondsWhole.split('"')[1]);
+            var time = (minutes*60*1000) + (seconds*1000) + milliseconds;
+            
+            var name = chat.message.split(' has ')[0];
+            for(player in tagpro.players) {
+                if(tagpro.players[player].name === name) {
+                    var id = player;
+                }
+            } 
+        } else {
+            return
+        }
+        
+        storeData(positions, id, name, time);
         clearInterval(recordInterval);
     });
     
@@ -139,14 +160,19 @@ $(document).ready(function() {
 	    tagpro.ready(function() {
         	var dat = getStoredData();
         	var ghost;
-        	if(dat) ghost = tagpro.tiles.draw(tagpro.renderer.layers.foreground, 
+        	if(dat) { 
+        		ghost = tagpro.tiles.draw(tagpro.renderer.layers.foreground, 
                                       	"blueball", 
                                       	{x: dat.positions.x[0], y: dat.positions.x[0]}, 
                                       	null, 
                                       	null, 
-                                      	0.75, 
+                                      	1, // change this to change the opacity (e.g., 0.75 is 75% opacity) 
                                       	true);
-        	tagpro.socket.on('time', function(time) {
+                ghostname = ghost.addChild(tagpro.renderer.veryPrettyText(dat.name, "#BFFF00"));
+                ghostname.x = 20;
+                ghostname.y = -21;
+            };
+            tagpro.socket.on('time', function(time) {
             	if(time.state === 1) {
                 	recordGhostData();
                 	animateGhost(dat, ghost);
@@ -162,18 +188,18 @@ $(document).ready(function() {
 //--------------------------------------------//
 
 $(document).ready(function() {
-// if we're not in a game, but rather on the group page, make a button to reset the ghost data
-	if(document.URL.search(/groups\/[a-z]{8}/) >= 0) { 
-		$('#leaveButton').after('<Button id=rGButton>Reset Ghost');
-		$('#rGButton').after('<txt id=rGConf>Deleted');
-		$('#rGConf')[0].style.color='#66FF33';
-		$('#rGConf').hide();
-		$('#rGButton')[0].onclick = function(){
-			GM_deleteValue('currentBestData');
-			$('#rGConf').fadeIn();
-			$('#rGConf').fadeOut(1000);
-		}
-	}
+    // if we're not in a game, but rather on the group page, make a button to reset the ghost data
+    if(document.URL.search(/groups\/[a-z]{8}/) >= 0) { 
+        $('#leaveButton').after('<Button id=rGButton>Reset Ghost');
+        $('#rGButton').after('<txt id=rGConf>Deleted');
+        $('#rGConf')[0].style.color='#66FF33';
+        $('#rGConf').hide();
+        $('#rGButton')[0].onclick = function(){
+            GM_deleteValue('currentBestData');
+            $('#rGConf').fadeIn();
+            $('#rGConf').fadeOut(1000);
+        }
+    }
 });
 
 
