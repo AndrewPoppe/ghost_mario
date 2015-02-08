@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name          Ghost Mario
 // @version       0.1
+// @author        ballparts
 // @include       http://*.koalabeast.com*
 // @include       http://*.jukejuice.com*
 // @include       http://*.newcompte.fr*
-// @grant		  GM_setValue
-// @grant 		  GM_getValue
-// @grant 		  GM_deleteValue
+// @grant         GM_setValue
+// @grant         GM_getValue
+// @grant         GM_deleteValue
 // ==/UserScript==
-
 
 
 //--------------------------------------//
@@ -60,12 +60,7 @@ function recordGhostData() {
             if (!positions['player' + player]) {
                 positions['player' + player] = {
                     x: 		createNullArray(saveDuration * fps),
-                    y: 		createNullArray(saveDuration * fps),
-                    //name: 	new Array(saveDuration * fps),
-                    //dead: 	new Array(saveDuration * fps),
-                    //auth: 	new Array(saveDuration * fps),
-                    //degree:	new Array(saveDuration * fps),
-                    //flair: 	new Array(saveDuration * fps)
+                    y: 		createNullArray(saveDuration * fps)
                 };
             };
         };
@@ -102,7 +97,7 @@ function recordGhostData() {
                 }
             }
             storeData(positions, id, name, time);
-        	clearInterval(recordInterval);
+            clearInterval(recordInterval);
         } 
     });
     
@@ -160,6 +155,7 @@ $(document).ready(function() {
         tagpro.ready(function() {
             var dat = getStoredData();
             var ghost;
+            var ghostname;
             if(dat) { 
                 ghost = tagpro.tiles.draw(tagpro.renderer.layers.foreground, 
                                           "blueball", 
@@ -202,3 +198,5 @@ $(document).ready(function() {
         }
     }
 });
+
+
