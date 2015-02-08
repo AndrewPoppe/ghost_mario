@@ -100,13 +100,10 @@ function recordGhostData() {
                 if(tagpro.players[player].name === name) {
                     var id = player;
                 }
-            } 
-        } else {
-            return
-        }
-        
-        storeData(positions, id, name, time);
-        clearInterval(recordInterval);
+            }
+            storeData(positions, id, name, time);
+        	clearInterval(recordInterval);
+        } 
     });
     
 };
@@ -158,31 +155,31 @@ function animateGhost(dat, ghost, ghostname) {
 
 // actually start recording
 $(document).ready(function() {
-	// if we're in a game:
-	if(document.URL.search(/:[0-9]{4}/) >= 0) {
-	    tagpro.ready(function() {
-        	var dat = getStoredData();
-        	var ghost;
-        	if(dat) { 
-        		ghost = tagpro.tiles.draw(tagpro.renderer.layers.foreground, 
-                                      	"blueball", 
-                                      	{x: dat.positions.x[0], y: dat.positions.x[0]}, 
-                                      	null, 
-                                      	null, 
-                                      	0.75, // change this to change the opacity (e.g., 0.75 is 75% opacity) 
-                                      	true);
+    // if we're in a game:
+    if(document.URL.search(/:[0-9]{4}/) >= 0) {
+        tagpro.ready(function() {
+            var dat = getStoredData();
+            var ghost;
+            if(dat) { 
+                ghost = tagpro.tiles.draw(tagpro.renderer.layers.foreground, 
+                                          "blueball", 
+                                          {x: dat.positions.x[0], y: dat.positions.x[0]}, 
+                                          null, 
+                                          null, 
+                                          0.75, // change this to change the opacity (e.g., 0.75 is 75% opacity) 
+                                          true);
                 ghostname = ghost.addChild(tagpro.renderer.veryPrettyText(dat.name, "#BFFF00"));
                 ghostname.x = 20;
                 ghostname.y = -21;
                 ghostname.alpha = 1/ghost.alpha;
             };
             tagpro.socket.on('time', function(time) {
-            	if(time.state === 1) {
-                	recordGhostData();
-                	animateGhost(dat, ghost, ghostname);
-            	};
-        	});
-    	});
+                if(time.state === 1) {
+                    recordGhostData();
+                    animateGhost(dat, ghost, ghostname);
+                };
+            });
+        });
     };
 });
 
