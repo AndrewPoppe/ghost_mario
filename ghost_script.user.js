@@ -169,11 +169,12 @@ $(document).ready(function() {
                                       	{x: dat.positions.x[0], y: dat.positions.x[0]}, 
                                       	null, 
                                       	null, 
-                                      	1, // change this to change the opacity (e.g., 0.75 is 75% opacity) 
+                                      	0.75, // change this to change the opacity (e.g., 0.75 is 75% opacity) 
                                       	true);
                 ghostname = ghost.addChild(tagpro.renderer.veryPrettyText(dat.name, "#BFFF00"));
                 ghostname.x = 20;
                 ghostname.y = -21;
+                ghostname.alpha = 1/ghost.alpha;
             };
             tagpro.socket.on('time', function(time) {
             	if(time.state === 1) {
