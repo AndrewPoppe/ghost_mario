@@ -135,12 +135,15 @@ function getStoredData() {
 }
 
 // function to start ghost animation
-function animateGhost(dat, ghost) {
+function animateGhost(dat, ghost, ghostname) {
     if(!dat) return
     var i = 0;
     interval = setInterval(function(){
         ghost.position.x = dat.positions.x[i];
         ghost.position.y = dat.positions.y[i];
+        ghostname.y = -21 * tagpro.zoom;
+        ghostname.scale.x = tagpro.zoom;
+        ghostname.scale.y = tagpro.zoom;
         i++;
         if(i >= dat.positions.x.length) clearInterval(interval);
     }, 1000/60)
@@ -175,7 +178,7 @@ $(document).ready(function() {
             tagpro.socket.on('time', function(time) {
             	if(time.state === 1) {
                 	recordGhostData();
-                	animateGhost(dat, ghost);
+                	animateGhost(dat, ghost, ghostname);
             	};
         	});
     	});
@@ -201,5 +204,3 @@ $(document).ready(function() {
         }
     }
 });
-
-
