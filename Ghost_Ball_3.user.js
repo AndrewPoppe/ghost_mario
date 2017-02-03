@@ -159,7 +159,7 @@ $(document).ready(function() {
             if(dat) { 
                 ghost = tagpro.tiles.draw(tagpro.renderer.layers.foreground, 
                                           "blueball", 
-                                          {x: dat.positions.x[0], y: dat.positions.x[0]}, 
+                                          {x: dat.positions.x[0], y: dat.positions.y[0]}, 
                                           null, 
                                           null, 
                                           0.75, // change this to change the opacity (e.g., 0.75 is 75% opacity) 
