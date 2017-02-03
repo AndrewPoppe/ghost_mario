@@ -187,7 +187,8 @@ $(document).ready(function() {
 $(document).ready(function() {
     // if we're not in a game, but rather on the group page, make a button to reset the ghost data
     if(document.URL.search(/groups\/[a-z]{8}/) >= 0) { 
-        $('#leaveButton').after('<Button id=rGButton>Reset Ghost');
+        if($('#leaveButton')[0]) $('#leaveButton').after('<Button id=rGButton>Reset Ghost');
+        if($('#pug-btn')[0]) $('#pug-btn').after('<button class="btn btn-default player-setting js-socket-btn" id=rGButton>Reset Ghost');
         $('#rGButton').after('<txt id=rGConf>Deleted');
         $('#rGConf')[0].style.color='#66FF33';
         $('#rGConf').hide();
